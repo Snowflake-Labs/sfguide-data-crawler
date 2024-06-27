@@ -80,9 +80,9 @@ def run_complete(session, tablename, model, sampling_mode, n, prompt, temperatur
     samples = sample_tbl(tablename, sampling_mode, n, session)
 
     try:
+        prompt = textwrap.dedent(prompt.format(table_samples = samples))
         if isinstance(temperature, float):
-            if temperature > 0 and temperature < 1:
-                prompt = textwrap.dedent(prompt.format(table_samples = samples))
+            if temperature > 0 and temperature < 1: 
                 response = cortex_sql(session,
                                     model,
                                     prompt,
