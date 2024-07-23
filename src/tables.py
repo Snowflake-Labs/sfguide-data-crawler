@@ -131,7 +131,7 @@ def get_crawlable_tbls(session,
     SELECT 
         T.TABLENAME
     FROM T NATURAL FULL OUTER JOIN {catalog_database}.{catalog_schema}.{catalog_table}
-    WHERE DATA_CATALOG.TABLE_CATALOG.TABLE_CATALOG.TABLENAME IS NULL
+    WHERE {catalog_database}.{catalog_schema}.{catalog_table}.TABLENAME IS NULL
     """
     return session.sql(query).to_pandas()['TABLENAME'].values.tolist()
 
