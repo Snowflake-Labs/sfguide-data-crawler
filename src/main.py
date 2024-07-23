@@ -63,7 +63,7 @@ def run_table_catalog(session,
             # Samples passed later via double {{table_samples}}
             prompt = start_prompt.format(**prompt_args).replace("'", "\\'") 
             query = f"""
-            CALL DATA_CATALOG.TABLE_CATALOG.CATALOG_TABLE(
+            CALL {catalog_database}.{catalog_schema}.CATALOG_TABLE(
                                             tablename => '{t}',
                                             prompt => '{prompt}',
                                             sampling_mode => '{sampling_mode}',
