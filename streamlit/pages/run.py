@@ -52,7 +52,7 @@ if submit_button:
     with st.spinner('Crawling data...generating descriptions'):
         try:
             query = f"""
-            CALL DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_database => '{db}',
+            CALL DATA_CATALOG(target_database => '{db}',
                                       catalog_database => 'DATA_CATALOG',
                                       catalog_schema => 'TABLE_CATALOG',
                                       catalog_table => 'TABLE_CATALOG',
