@@ -4,6 +4,8 @@ def run_table_catalog(session,
                       catalog_schema,
                       catalog_table,
                       target_schema,
+                      include_tables,
+                      exclude_tables,
                       sampling_mode,
                       update_comment,
                       n,
@@ -22,6 +24,9 @@ def run_table_catalog(session,
         catalog_schema (string): Snowflake schemaname to store table catalog.
         catalog_table (string): Snowflake tablename to store table catalog.
         target_schema (string, Optional): Snowflake schema to catalog.
+        include_tables (list, Optional): Explicit list of tables to include in catalog.
+        exclude_tables (list, Optional): Explicit list of tables to exclude in catalog.
+                                         include_tables takes precedence over exclude_tables.
         sampling_mode (string): How to retrieve sample data records for table.
                                 One of ['fast' (Default), 'nonnull']
                                 - Pass 'fast' or omit to randomly sample records from each table.
@@ -46,6 +51,12 @@ def run_table_catalog(session,
 
     tables = get_crawlable_tbls(session, target_database, target_schema, 
                                 catalog_database, catalog_schema, catalog_table)
+    if include_tables:
+        tables = list(set(tables).intersection(set(include_tables)))
+    elif exclude_tables:
+        tables = list(set(tables).difference(set(exclude_tables)))
+    else:
+        pass
     if tables:
         context_db, context_schemas = get_unique_context(tables) # Database and set of Schemas to crawl
         schema_df = get_all_tables(session, context_db, context_schemas) # Contains all tables in schema(s)

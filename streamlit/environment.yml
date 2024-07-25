@@ -3,3 +3,4 @@ channels:
 - snowflake
 dependencies:
 - streamlit
+- snowflake-ml-python

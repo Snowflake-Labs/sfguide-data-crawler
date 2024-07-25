@@ -3,6 +3,8 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_datab
                                                          catalog_schema string,
                                                          catalog_table string,
                                                          target_schema string DEFAULT '',
+                                                         include_tables ARRAY DEFAULT null,
+                                                         exclude_tables ARRAY DEFAULT null,
                                                          sampling_mode string DEFAULT 'fast', 
                                                          update_comment boolean Default FALSE,
                                                          n integer DEFAULT 5,
