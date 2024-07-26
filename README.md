@@ -50,7 +50,8 @@ snow sql --connection="[connection-name]" -f sql/03__app.sql
 All necessary functions and stored procedures are now registered in `DATA_CATALOG.TABLE_CATALOG` in Snowflake.
 Any desired database and/or schema available to the current user/role can be crawled. 
 
-Below is an example of calling the utility to crawl database `JSUMMER` schema `CATALOG`. Results will be written to table `DATA_CATALOG.TABLE_CATALOGTABLE_CATALOG`.
+Below is an example of calling the utility to crawl all tables and views in database `JSUMMER` schema `CATALOG`.
+Use keyword arguments include_tables or exclude_tables to explicitly specify tables/views in the target database or schema. Results will be written to table `DATA_CATALOG.TABLE_CATALOGTABLE_CATALOG`. 
 ```sql
 CALL DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_database => 'JSUMMER',
                                   catalog_database => 'DATA_CATALOG',
