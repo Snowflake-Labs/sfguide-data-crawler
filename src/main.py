@@ -56,7 +56,7 @@ def run_table_catalog(session,
     elif exclude_tables:
         tables = list(set(tables).difference(set(exclude_tables)))
     else:
-        pass
+        tables = tables
     if tables:
         context_db, context_schemas = get_unique_context(tables) # Database and set of Schemas to crawl
         schema_df = get_all_tables(session, context_db, context_schemas) # Contains all tables in schema(s)

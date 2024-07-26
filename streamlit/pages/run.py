@@ -1,7 +1,8 @@
+import time
 import streamlit as st
 import pandas as pd
-from snowflake.snowpark import Session
-import snowflake.snowpark.functions as F
+from snowflake.cortex import Complete
+from snowflake.snowpark.exceptions import SnowparkSQLException
 from snowflake.snowpark.context import get_active_session
 
 # Get the current credentials
@@ -11,16 +12,14 @@ models = ["mistral-7b",
           "snowflake-artic",
           "mixtral-8x7b",
           "reka-flash",
-          "llama3.1-8b"
+          "llama3.1-8b",
+          "jamba-instruct"
           ]
 
 def test_complete(session, model, prompt = "Repeat the word hello and do not say anything else"):
     """Verifies selected model is supported in region and raises error otherwise."""
-    from snowflake.cortex import Complete
-    from snowflake.snowpark.exceptions import SnowparkSQLException
-    
     try:
-        Complete(model, prompt, session)
+        response = Complete(model, prompt, session)
     except SnowparkSQLException as e:
         if 'unknown model' in str(e):
             st.error('Selected model not supported in your region. Please select a different model.')
@@ -60,29 +59,29 @@ def get_schemas(session):
 # @st.experimental_dialog("Table selection.") # Coming soon with experimental_dialog GA
 def specify_tables(session):
     with st.expander("Table Selection (optional)"):
-        st.write("Specify tables to include or exclude.")
+        st.caption("Specify tables to include or exclude.")
         if st.session_state['db']:
             split_selection = 2 if st.session_state['schema'] else 1
             selectable_tables = make_table_list(session, st.session_state['db'], st.session_state['schema'])
         else:
             selectable_tables = []
-        d_col1, d_col2 = st.columns(2)
-        with d_col1:
-            st.session_state['include_tables'] = st.multiselect("Include",
-                                            options = selectable_tables,
-                                            format_func = lambda x: ".".join(x.split(".")[split_selection:]),
-                                            default = [])
-        with d_col2:
-            st.session_state['exclude_tables'] = st.multiselect("Exclude",
-                                            options = selectable_tables,
-                                            format_func = lambda x: ".".join(x.split(".")[split_selection:]),
-                                            default = [])
+        exclude_flag = st.toggle("Exclude tables")
+        specified_tables = st.multiselect("",
+                                        options = selectable_tables,
+                                        format_func = lambda x: ".".join(x.split(".")[split_selection:]),
+                                        default = [])
+        st.session_state['include_tables'] = []
+        st.session_state['exclude_tables'] = []
+        if specified_tables:
+            if exclude_flag:
+                st.session_state['exclude_tables'] = specified_tables
+            else:
+                st.session_state['include_tables'] = specified_tables
 
 st.set_page_config(layout="wide", page_title="Data Catalog Runner", page_icon="🧮")
 st.title("Catalog Tables ❄️")
 st.subheader("Specify databases or schemas to crawl")
 
-# with st.form("submission_form"):
 st.caption("Specify Snowflake data to crawl.")
 d_col1, d_col2 = st.columns(2)
 with d_col1:
@@ -124,9 +123,13 @@ with p_col4:
 submit_button = st.button("Submit")
 
 if submit_button:
-    with st.spinner('Verifying model availability...'):
-        test_complete(session, model) # Validate model is supported
+    with st.status('Checking model availability') as status:
+        test_complete(session, model)
+        st.write('Model confirmed')
+        
     with st.spinner('Crawling data...generating descriptions'):
+        if not st.session_state['schema']: # Fix sending schema as string None
+            st.session_state['schema'] = ''
         try:
             query = f"""
             CALL DATA_CATALOG(target_database => '{st.session_state['db']}',
