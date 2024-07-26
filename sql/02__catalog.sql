@@ -20,7 +20,7 @@ IMPORTS = ('@DATA_CATALOG.TABLE_CATALOG.SRC_FILES/tables.py',
 HANDLER = 'main.run_table_catalog'
 COMMENT = '{"origin": "sf_sit",
              "name": "data_catalog",
-             "version": {"major": 1, "minor": 1}}'
+             "version": {"major": 1, "minor": 2}}'
 EXECUTE AS CALLER;
 
 -- EXAMPLE RUN:
