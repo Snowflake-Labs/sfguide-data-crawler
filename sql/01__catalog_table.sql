@@ -5,7 +5,7 @@ RUNTIME_VERSION = '3.10'
 IMPORTS = ('@DATA_CATALOG.TABLE_CATALOG.SRC_FILES/tables.py')
 COMMENT = '{"origin": "sf_sit",
              "name": "data_catalog",
-             "version": {"major": 1, "minor": 2}}'
+             "version": {"major": 1, "minor": 3}}'
 HANDLER = 'tables.pctg_nonnulls'
 PACKAGES = ('pandas','snowflake-snowpark-python');
 
@@ -24,5 +24,5 @@ PACKAGES = ('snowflake-snowpark-python','joblib', 'pandas', 'snowflake-ml-python
 HANDLER = 'tables.generate_description'
 COMMENT = '{"origin": "sf_sit",
              "name": "data_catalog",
-             "version": {"major": 1, "minor": 2}}'
+             "version": {"major": 1, "minor": 3}}'
 EXECUTE AS CALLER;

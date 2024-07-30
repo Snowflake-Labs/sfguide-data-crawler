@@ -23,12 +23,12 @@ def filter_embeddings(question):
 
     cmd = """
         with results as
-        (SELECT TABLENAME, DESCRIPTION, EMBEDDINGS, 
+        (SELECT TABLENAME, DESCRIPTION, CREATED_ON, EMBEDDINGS, 
            VECTOR_COSINE_SIMILARITY(TABLE_CATALOG.EMBEDDINGS,
                     SNOWFLAKE.CORTEX.EMBED_TEXT_768('e5-base-v2', ?)) as similarity
         from TABLE_CATALOG
         order by similarity desc)
-        select TABLENAME, DESCRIPTION from results 
+        select TABLENAME, DESCRIPTION, CREATED_ON from results 
     """
     
     ordered_results = session.sql(cmd, params=[question])      
@@ -50,10 +50,10 @@ with st.form("data_editor_form"):
     else:
         edited = st.data_editor(descriptions_dataset,
                                 use_container_width=True,
-                                disabled=['TABLENAME'],
+                                disabled=['TABLENAME', 'CREATED_ON'],
                                 hide_index = True,
                                 num_rows = "fixed",
-                                column_order=['TABLENAME', 'DESCRIPTION'],
+                                column_order=['TABLENAME', 'DESCRIPTION', 'CREATED_ON'],
                                 column_config={
             "TABLENAME": st.column_config.Column(
                 "Table Names",
@@ -66,6 +66,12 @@ with st.form("data_editor_form"):
                 help="LLM-generated table descriptions",
                 width="large",
                 required=True,
+            ),
+            "CREATED_ON": st.column_config.Column(
+                "Created On",
+                help="Date the descriptions was generated",
+                width=None,
+                required=True,
             )                   
             }
             )
@@ -75,14 +81,16 @@ with st.form("data_editor_form"):
 
 if submit_button:
     try:
-        full_dataset = session.create_dataframe(edited)\
-                           .withColumn('EMBEDDINGS',
-                                F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_768',
-                                           'e5-base-v2',
-                                           F.col('DESCRIPTION')))
-        full_dataset.write.save_as_table(table_name = "TABLE_CATALOG",
-                                         mode = "overwrite",
-                                         column_order = "name") # TODO FIND FIX FOR THIS BUG
+        new_df = session.create_dataframe(edited)
+        current_df = get_dataset("TABLE_CATALOG")
+        _ = current_df.merge(new_df, (current_df['TABLENAME'] == new_df['TABLENAME']) &
+                              (current_df['DESCRIPTION'] != new_df['DESCRIPTION']),
+                 [F.when_matched().update({'DESCRIPTION': new_df['DESCRIPTION'],
+                                           'EMBEDDINGS': F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_768',
+                                                                    'e5-base-v2',
+                                                                    F.col('DESCRIPTION')),
+                                           'CREATED_ON': F.current_timestamp()})])
+
         st.success("Table updated")
         time.sleep(5)
     except:

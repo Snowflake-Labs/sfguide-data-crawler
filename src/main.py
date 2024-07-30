@@ -6,6 +6,7 @@ def run_table_catalog(session,
                       target_schema,
                       include_tables,
                       exclude_tables,
+                      replace_catalog,
                       sampling_mode,
                       update_comment,
                       n,
@@ -27,6 +28,7 @@ def run_table_catalog(session,
         include_tables (list, Optional): Explicit list of tables to include in catalog.
         exclude_tables (list, Optional): Explicit list of tables to exclude in catalog.
                                          include_tables takes precedence over exclude_tables.
+        replace_catalog (bool): If True, replace existing catalog table records. Defaults to False.
         sampling_mode (string): How to retrieve sample data records for table.
                                 One of ['fast' (Default), 'nonnull']
                                 - Pass 'fast' or omit to randomly sample records from each table.
@@ -46,11 +48,12 @@ def run_table_catalog(session,
     import pandas as pd
     import snowflake.snowpark.functions as F
 
-    from tables import get_crawlable_tbls, get_unique_context, get_all_tables
+    from tables import get_crawlable_tbls, get_unique_context, get_all_tables, add_records_to_catalog
     from prompts import start_prompt
 
     tables = get_crawlable_tbls(session, target_database, target_schema, 
-                                catalog_database, catalog_schema, catalog_table)
+                                catalog_database, catalog_schema, catalog_table,
+                                replace_catalog)
     if include_tables:
         tables = list(set(tables).intersection(set(include_tables)))
     elif exclude_tables:
@@ -101,10 +104,19 @@ def run_table_catalog(session,
                     .withColumn('EMBEDDINGS',
                                 F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_768',
                                            'e5-base-v2',
-                                           F.col('DESCRIPTION')))
-        df.write.save_as_table(table_name = [catalog_database, catalog_schema, catalog_table],
-                               mode = "append",
-                               column_order = "name")
+                                           F.col('DESCRIPTION')))\
+                    .withColumn('CREATED_ON', F.current_timestamp())
+        
+        add_records_to_catalog(session,
+                               catalog_database,
+                               catalog_schema,
+                               catalog_table,
+                               df,
+                               replace_catalog)
+        
+        # df.write.save_as_table(table_name = [catalog_database, catalog_schema, catalog_table],
+        #                        mode = "append",
+        #                        column_order = "name")
         return df
     else:
         return session.create_dataframe([['No new tables to crawl','']], schema=['TABLENAME', 'DESCRIPTION'])
