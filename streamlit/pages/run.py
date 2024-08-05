@@ -19,7 +19,7 @@ models = ["mistral-7b",
 def test_complete(session, model, prompt = "Repeat the word hello and do not say anything else"):
     """Verifies selected model is supported in region and raises error otherwise."""
     try:
-        response = Complete(model, prompt, session)
+        response = Complete(model, prompt, session = session)
     except SnowparkSQLException as e:
         if 'unknown model' in str(e):
             st.error('Selected model not supported in your region. Please select a different model.')
