@@ -4,4 +4,4 @@ MAIN_FILE = '/manage.py'
 QUERY_WAREHOUSE = WH_XS
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
-            "version": {"major": 1, "minor": 2}}';
+            "version": {"major": 1, "minor": 3}}';

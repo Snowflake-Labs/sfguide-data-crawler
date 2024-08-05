@@ -110,13 +110,20 @@ def get_crawlable_tbls(session,
                      schema,
                      catalog_database,
                      catalog_schema,
-                     catalog_table):
+                     catalog_table,
+                     ignore_catalog = False):
     """Returns list of tables in database/schema that have not been cataloged."""
 
     if schema:
         schema_qualifier = f"= '{schema}'"
     else:
         schema_qualifier = "<> 'INFORMATION_SCHEMA'"
+
+    if ignore_catalog:
+        catalog_constraint = ''
+    else:
+        catalog_constraint = f"""NATURAL FULL OUTER JOIN {catalog_database}.{catalog_schema}.{catalog_table}
+                                 WHERE {catalog_database}.{catalog_schema}.{catalog_table}.TABLENAME IS NULL"""
     
     query = f"""
     WITH T AS (
@@ -130,8 +137,8 @@ def get_crawlable_tbls(session,
             )
     SELECT 
         T.TABLENAME
-    FROM T NATURAL FULL OUTER JOIN {catalog_database}.{catalog_schema}.{catalog_table}
-    WHERE {catalog_database}.{catalog_schema}.{catalog_table}.TABLENAME IS NULL
+    FROM T 
+    {catalog_constraint}
     """
     return session.sql(query).to_pandas()['TABLENAME'].values.tolist()
 
@@ -178,6 +185,25 @@ def get_all_tables(session, target_database, target_schemas):
     """
     return session.sql(query).to_pandas()
 
+def add_records_to_catalog(session,
+                           catalog_database,
+                           catalog_schema,
+                           catalog_table,
+                           new_df,
+                           replace_catalog = False):
+    
+    if replace_catalog:
+        current_df = session.table(f'{catalog_database}.{catalog_schema}.{catalog_table}')
+        _ = current_df.merge(new_df, current_df['TABLENAME'] == new_df['TABLENAME'],
+                 [F.when_matched().update({'DESCRIPTION': new_df['DESCRIPTION'],
+                                           'CREATED_ON': new_df['CREATED_ON']}),
+                  F.when_not_matched().insert({'TABLENAME': new_df['TABLENAME'],
+                                               'DESCRIPTION': new_df['DESCRIPTION'],
+                                               'CREATED_ON': new_df['CREATED_ON']})])
+    else:
+        new_df.write.save_as_table(table_name = [catalog_database, catalog_schema, catalog_table],
+                                mode = "append",
+                                column_order = "name")
 
 def generate_description(session,
                          tablename,
@@ -233,5 +259,5 @@ def generate_description(session,
         response = f'Error encountered: {str(e)}'
     return {
         'TABLENAME': tablename,
-        'DESCRIPTION': response.replace("\\", ""),
+        'DESCRIPTION': response.replace("\\", "")
         }

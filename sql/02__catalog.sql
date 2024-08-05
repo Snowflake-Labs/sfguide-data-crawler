@@ -5,6 +5,7 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_datab
                                                          target_schema string DEFAULT '',
                                                          include_tables ARRAY DEFAULT null,
                                                          exclude_tables ARRAY DEFAULT null,
+                                                         replace_catalog string DEFAULT FALSE,
                                                          sampling_mode string DEFAULT 'fast', 
                                                          update_comment boolean Default FALSE,
                                                          n integer DEFAULT 5,
@@ -20,7 +21,7 @@ IMPORTS = ('@DATA_CATALOG.TABLE_CATALOG.SRC_FILES/tables.py',
 HANDLER = 'main.run_table_catalog'
 COMMENT = '{"origin": "sf_sit",
              "name": "data_catalog",
-             "version": {"major": 1, "minor": 2}}'
+             "version": {"major": 1, "minor": 3}}'
 EXECUTE AS CALLER;
 
 -- EXAMPLE RUN:

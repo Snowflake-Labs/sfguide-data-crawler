@@ -16,7 +16,7 @@ models = ["mistral-7b",
           "jamba-instruct"
           ]
 
-def test_complete(session, model, prompt = "Repeat the word hello and do not say anything else"):
+def test_complete(session, model, prompt = "Repeat the word hello once and only once. Do not say anything else."):
     """Verifies selected model is supported in region and raises error otherwise."""
     try:
         response = Complete(model, prompt, session = session)
@@ -97,7 +97,12 @@ with d_col2:
 specify_tables(session)
 st.divider()
 st.caption("Select crawling parameters.")
-p_col1, p_col2, p_col3, p_col4 = st.columns(4)
+
+replace_catalog = st.checkbox("Replace catalog descriptions",
+                            help = "Select True to regenerate and replace table descriptions.")
+update_comment = st.checkbox("Replace table comments",
+                            help = "Select True to update table comments with generated descriptions.")
+p_col1, p_col2, p_col3 = st.columns(3)
 with p_col1:
     sampling_mode = st.selectbox("Sampling strategy",
                                 ("fast", "nonnull"),
@@ -111,10 +116,6 @@ with p_col2:
                        step = 1,
                        format = '%i')
 with p_col3:
-    update_comment = st.selectbox("Update table comments",
-                                options = (False, True),
-                                help = "Select True to update table comments with generated descriptions.")
-with p_col4:
     model = st.selectbox("Cortex LLM",
                                 models,
                                 placeholder="mistral-7b",
@@ -139,6 +140,7 @@ if submit_button:
                                       target_schema => '{st.session_state['schema']}',
                                       include_tables => {st.session_state['include_tables']},
                                       exclude_tables => {st.session_state['exclude_tables']},
+                                      replace_catalog => {bool(replace_catalog)},
                                       sampling_mode => '{sampling_mode}', 
                                       update_comment => {bool(update_comment)},
                                       n => {int(n)},
