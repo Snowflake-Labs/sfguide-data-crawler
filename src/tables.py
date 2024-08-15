@@ -196,10 +196,16 @@ def add_records_to_catalog(session,
         current_df = session.table(f'{catalog_database}.{catalog_schema}.{catalog_table}')
         _ = current_df.merge(new_df, current_df['TABLENAME'] == new_df['TABLENAME'],
                  [F.when_matched().update({'DESCRIPTION': new_df['DESCRIPTION'],
-                                           'CREATED_ON': new_df['CREATED_ON']}),
+                                           'CREATED_ON': new_df['CREATED_ON'],
+                                           'EMBEDDINGS': F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_768',
+                                                                   'e5-base-v2',
+                                                                    new_df['DESCRIPTION'])}),
                   F.when_not_matched().insert({'TABLENAME': new_df['TABLENAME'],
                                                'DESCRIPTION': new_df['DESCRIPTION'],
-                                               'CREATED_ON': new_df['CREATED_ON']})])
+                                               'CREATED_ON': new_df['CREATED_ON'],
+                                               'EMBEDDINGS': F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_768',
+                                                                   'e5-base-v2',
+                                                                    new_df['DESCRIPTION'])})])
     else:
         new_df.write.save_as_table(table_name = [catalog_database, catalog_schema, catalog_table],
                                 mode = "append",
