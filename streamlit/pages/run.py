@@ -16,14 +16,14 @@ models = ["mistral-7b",
           "jamba-instruct"
           ]
 
-def test_complete(session, model, prompt = "Repeat the word hello once and only once. Do not say anything else."):
-    """Verifies selected model is supported in region and raises error otherwise."""
+def test_complete(session, model, prompt = "Repeat the word hello once and only once. Do not say anything else.") -> bool:
+    """Returns True if selected model is supported in region and returns False otherwise."""
     try:
         response = Complete(model, prompt, session = session)
+        return True
     except SnowparkSQLException as e:
         if 'unknown model' in str(e):
-            st.error('Selected model not supported in your region. Please select a different model.')
-            st.stop()
+            return False
 
 def make_table_list(session,
                     target_database,
@@ -125,48 +125,57 @@ submit_button = st.button("Submit")
 
 if submit_button:
     with st.status('Checking model availability') as status:
-        test_complete(session, model)
-        st.write('Model confirmed')
-        
-    with st.spinner('Crawling data...generating descriptions'):
-        if not st.session_state['schema']: # Fix sending schema as string None
-            st.session_state['schema'] = ''
-        try:
-            query = f"""
-            CALL DATA_CATALOG(target_database => '{st.session_state['db']}',
-                                      catalog_database => 'DATA_CATALOG',
-                                      catalog_schema => 'TABLE_CATALOG',
-                                      catalog_table => 'TABLE_CATALOG',
-                                      target_schema => '{st.session_state['schema']}',
-                                      include_tables => {st.session_state['include_tables']},
-                                      exclude_tables => {st.session_state['exclude_tables']},
-                                      replace_catalog => {bool(replace_catalog)},
-                                      sampling_mode => '{sampling_mode}', 
-                                      update_comment => {bool(update_comment)},
-                                      n => {int(n)},
-                                      model => '{model}'
-                                      )
-            """
-            df = session.sql(query)
-            st.dataframe(df,
-                        use_container_width=True,
-                        hide_index = True,
-                        column_order=['TABLENAME', 'DESCRIPTION'],
-                        column_config={
-            "TABLENAME": st.column_config.Column(
-                "Table Names",
-                help="Snowflake Table Names",
-                width=None,
-                required=True,
-            ),
-            "DESCRIPTION": st.column_config.Column(
-                "Table Descriptions",
-                help="LLM-generated table descriptions",
-                width="large",
-                required=True,
-            )                   
-            })
-            # time.sleep(5)
-            st.write("Visit **manage** to update descriptions.")
-        except Exception as e:
-            st.warning(f"Error generating descriptions. Error: {str(e)}")
+        model_available = test_complete(session, model)
+        if model_available:
+            # st.write('Model availability confirmed')
+            status.update(
+            label="Model available", state="complete", expanded=False
+        )
+        else:
+            # st.error('Model not available in your region. Please select another model.')
+            status.update(
+            label="Model not available in your region. Please select another model.", state="error", expanded=False
+            )
+    if model_available:    
+        with st.spinner('Crawling data...generating descriptions'):
+            if not st.session_state['schema']: # Fix sending schema as string None
+                st.session_state['schema'] = ''
+            try:
+                query = f"""
+                CALL DATA_CATALOG(target_database => '{st.session_state['db']}',
+                                        catalog_database => 'DATA_CATALOG',
+                                        catalog_schema => 'TABLE_CATALOG',
+                                        catalog_table => 'TABLE_CATALOG',
+                                        target_schema => '{st.session_state['schema']}',
+                                        include_tables => {st.session_state['include_tables']},
+                                        exclude_tables => {st.session_state['exclude_tables']},
+                                        replace_catalog => {bool(replace_catalog)},
+                                        sampling_mode => '{sampling_mode}', 
+                                        update_comment => {bool(update_comment)},
+                                        n => {int(n)},
+                                        model => '{model}'
+                                        )
+                """
+                df = session.sql(query)
+                st.dataframe(df,
+                            use_container_width=True,
+                            hide_index = True,
+                            column_order=['TABLENAME', 'DESCRIPTION'],
+                            column_config={
+                "TABLENAME": st.column_config.Column(
+                    "Table Names",
+                    help="Snowflake Table Names",
+                    width=None,
+                    required=True,
+                ),
+                "DESCRIPTION": st.column_config.Column(
+                    "Table Descriptions",
+                    help="LLM-generated table descriptions",
+                    width="large",
+                    required=True,
+                )                   
+                })
+                # time.sleep(5)
+                st.write("Visit **manage** to update descriptions.")
+            except Exception as e:
+                st.warning(f"Error generating descriptions. Error: {str(e)}")
