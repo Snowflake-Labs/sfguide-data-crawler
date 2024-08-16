@@ -21,15 +21,5 @@ IMPORTS = ('@DATA_CATALOG.TABLE_CATALOG.SRC_FILES/tables.py',
 HANDLER = 'main.run_table_catalog'
 COMMENT = '{"origin": "sf_sit",
              "name": "data_catalog",
-             "version": {"major": 1, "minor": 3}}'
+             "version": {"major": 1, "minor": 4}}'
 EXECUTE AS CALLER;
-
--- EXAMPLE RUN:
--- CALL DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_database => 'JSUMMER',
---                                   catalog_database => 'DATA_CATALOG',
---                                   catalog_schema => 'TABLE_CATALOG',
---                                   catalog_table => 'TABLE_CATALOG',
---                                   target_schema => 'CATALOG',
---                                   sampling_mode => 'fast', 
---                                   update_comment => TRUE
---                                   );

@@ -1,12 +1,12 @@
 CREATE DATABASE IF NOT EXISTS DATA_CATALOG
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
-            "version": {"major": 1, "minor": 3}}';
+            "version": {"major": 1, "minor": 4}}';
 
 CREATE SCHEMA IF NOT EXISTS DATA_CATALOG.TABLE_CATALOG
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
-            "version": {"major": 1, "minor": 3}}';
+            "version": {"major": 1, "minor": 4}}';
 
 CREATE OR REPLACE STAGE DATA_CATALOG.TABLE_CATALOG.SRC_FILES 
 DIRECTORY = (ENABLE = true);
@@ -24,4 +24,4 @@ CREATE OR REPLACE TABLE DATA_CATALOG.TABLE_CATALOG.TABLE_CATALOG (
   )
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
-            "version": {"major": 1, "minor": 3}}';
+            "version": {"major": 1, "minor": 4}}';
