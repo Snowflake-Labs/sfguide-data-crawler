@@ -6,7 +6,8 @@ def get_table_comment(tablename, session):
 
     tbl_context = tablename.split('.')
     tbl, schema = tbl_context[-1], '.'.join(tbl_context[:-1])
-    return session.sql(f"SHOW TABLES LIKE '{tbl}' IN SCHEMA {schema} LIMIT 1").collect()[0]['comment'].replace("'", "\\'")
+    return session.sql(f"SHOW TABLES LIKE '{tbl}' IN SCHEMA {schema} LIMIT 1").collect()[0]['comment']\
+                  .replace("'", "\\'")
 
 def convert_vec2array(tablename, session):
     """Converts vector type columns of dataframe to arrays before sampling"""
@@ -45,7 +46,7 @@ def sample_tbl(tablename, sampling_mode, n, session):
                 .to_pandas().values[0][0]
     else:
         raise ValueError("sampling_mode must be one of ['fast' (Default), 'nonnull'].") 
-    return samples.replace("'", "\\'") 
+    return samples.replace("'", "\\'")
 
 def cortex_sql(session, model, prompt, temperature):
     """Executes CORTEX COMPLETE using SQL in Python API.
@@ -80,7 +81,9 @@ def run_complete(session, tablename, model, sampling_mode, n, prompt, temperatur
     samples = sample_tbl(tablename, sampling_mode, n, session)
 
     try:
+        # Escape curly braces for SQL translation to avoid error
         prompt = textwrap.dedent(prompt.format(table_samples = samples))
+        
         if isinstance(temperature, float):
             if temperature > 0 and temperature < 1: 
                 response = cortex_sql(session,
@@ -96,6 +99,7 @@ def run_complete(session, tablename, model, sampling_mode, n, prompt, temperatur
                                 prompt,
                                 session = session)
         response = str(response).strip().replace("'", "\\'")
+        
         return ("success", response)
     except SnowparkSQLException as e:
         if 'max tokens' in str(e):
@@ -120,7 +124,8 @@ def get_crawlable_tbls(session,
         schema_qualifier = "<> 'INFORMATION_SCHEMA'"
 
     if ignore_catalog:
-        catalog_constraint = ''
+        catalog_constraint = ""
+        
     else:
         catalog_constraint = f"""NATURAL FULL OUTER JOIN {catalog_database}.{catalog_schema}.{catalog_table}
                                  WHERE {catalog_database}.{catalog_schema}.{catalog_table}.TABLENAME IS NULL"""
@@ -157,7 +162,7 @@ def get_all_tables(session, target_database, target_schemas):
         SELECT 
             TABLE_SCHEMA
             , TABLE_CATALOG || '.' || TABLE_SCHEMA || '.' || TABLE_NAME AS TABLENAME
-            ,COMMENT AS TABLE_COMMENT
+            ,REGEXP_REPLACE(COMMENT, '{{|}}','') AS TABLE_COMMENT
         FROM {target_database}.INFORMATION_SCHEMA.tables 
         WHERE 1=1 
             AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
@@ -170,7 +175,7 @@ def get_all_tables(session, target_database, target_schemas):
         SELECT
             TABLE_SCHEMA
             ,TABLE_CATALOG || '.' || TABLE_SCHEMA || '.' || TABLE_NAME AS TABLENAME
-            ,LISTAGG(CONCAT(COLUMN_NAME, ' ', DATA_TYPE, COALESCE(concat(' (', COMMENT, ')'), '')), ', ') as COLUMN_INFO
+            ,LISTAGG(CONCAT(COLUMN_NAME, ' ', DATA_TYPE, COALESCE(concat(' (', REGEXP_REPLACE(COMMENT, '{{|}}',''), ')'), '')), ', ') as COLUMN_INFO
         FROM {target_database}.INFORMATION_SCHEMA.COLUMNS
         WHERE 1=1 
             AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
@@ -183,6 +188,7 @@ def get_all_tables(session, target_database, target_schemas):
         , 'Table: ' || TABLENAME || ', Comment: ' || COALESCE(TABLE_COMMENT, 'No comment') || ', Columns: ' || COLUMN_INFO AS TABLE_DDL
     FROM T NATURAL INNER JOIN C
     """
+    # F-string interpolation later so remove unexpected curly brackets here in data such as in comments
     return session.sql(query).to_pandas()
 
 def add_records_to_catalog(session,
