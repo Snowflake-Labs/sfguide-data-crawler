@@ -127,12 +127,10 @@ if submit_button:
     with st.status('Checking model availability') as status:
         model_available = test_complete(session, model)
         if model_available:
-            # st.write('Model availability confirmed')
             status.update(
             label="Model available", state="complete", expanded=False
         )
         else:
-            # st.error('Model not available in your region. Please select another model.')
             status.update(
             label="Model not available in your region. Please select another model.", state="error", expanded=False
             )
