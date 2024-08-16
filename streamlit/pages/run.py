@@ -121,7 +121,8 @@ with p_col3:
                                 placeholder="mistral-7b",
                                 help = "Select LLM to generate table descriptions.")
 
-submit_button = st.button("Submit")
+submit_button = st.button("Submit",
+                          disabled = False if st.session_state.get('db', None) else True)
 
 if submit_button:
     with st.status('Checking model availability') as status:
@@ -140,13 +141,13 @@ if submit_button:
                 st.session_state['schema'] = ''
             try:
                 query = f"""
-                CALL DATA_CATALOG(target_database => '{st.session_state['db']}',
+                CALL DATA_CATALOG(target_database => '{st.session_state["db"]}',
                                         catalog_database => 'DATA_CATALOG',
                                         catalog_schema => 'TABLE_CATALOG',
                                         catalog_table => 'TABLE_CATALOG',
-                                        target_schema => '{st.session_state['schema']}',
-                                        include_tables => {st.session_state['include_tables']},
-                                        exclude_tables => {st.session_state['exclude_tables']},
+                                        target_schema => '{st.session_state["schema"]}',
+                                        include_tables => {st.session_state["include_tables"]},
+                                        exclude_tables => {st.session_state["exclude_tables"]},
                                         replace_catalog => {bool(replace_catalog)},
                                         sampling_mode => '{sampling_mode}', 
                                         update_comment => {bool(update_comment)},

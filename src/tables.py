@@ -120,10 +120,13 @@ def get_crawlable_tbls(session,
         schema_qualifier = "<> 'INFORMATION_SCHEMA'"
 
     if ignore_catalog:
-        catalog_constraint = ''
+        catalog_constraint = "" # original
+        # catalog_constraint = f"""DUMMY - ignore_catalog was evaluated to True"""
+        
     else:
         catalog_constraint = f"""NATURAL FULL OUTER JOIN {catalog_database}.{catalog_schema}.{catalog_table}
                                  WHERE {catalog_database}.{catalog_schema}.{catalog_table}.TABLENAME IS NULL"""
+        # catalog_constraint = f"""DUMMY - ignore_catalog was evaluated to False"""
     
     query = f"""
     WITH T AS (
