@@ -5,7 +5,7 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_datab
                                                          target_schema string DEFAULT '',
                                                          include_tables ARRAY DEFAULT null,
                                                          exclude_tables ARRAY DEFAULT null,
-                                                         replace_catalog string DEFAULT FALSE,
+                                                         replace_catalog boolean DEFAULT FALSE,
                                                          sampling_mode string DEFAULT 'fast', 
                                                          update_comment boolean Default FALSE,
                                                          n integer DEFAULT 5,
