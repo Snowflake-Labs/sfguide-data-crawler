@@ -22,29 +22,8 @@ Snowflake Cortex gives you instant access to industry-leading large language mod
 # Running Data Crawler
 
 ## Setup
-> **Note:** If using SnowCLI, ensure version is >= 2.3.0.
+The Data Crawler application is deployed to Streamlit in Snowflake by running the SQL file `setup.sql`. The file contents can be copied and pasted into a Snowsight SQL worksheet or run via [VSCode](https://docs.snowflake.com/en/user-guide/vscode-ext) with the Snowflake extension or [SnowCLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index). Once the file is run, the application is available in Snowsight via the Streamlit menu.
 
-1) First obtain the source code for the Data Crawler utility by either downloading this repo or cloning the repository locally. 
-2) It is recommended to use [VSCode](https://docs.snowflake.com/en/user-guide/vscode-ext) with the Snowflake extension or [SnowCLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index). 
-
-## Building
-### Option 1: Using VSCode with Snowflake Extension
-Execute the scripts in `sql/` in order of their leading filename numbers, e.g. `00__setup.sql` before `01__catalog_table.sql`.
-
-Note that before executing `03__app.sql`, update QUERY_WAREHOUSE in the file to an appropriate warehouse name. This script will create a Streamlit UI to manage table descriptions and initiate crawling.
-
-### Option 2: Using SnowCLI
-Navigate to the project root in terminal. Execute the below in terminal. Note that you may need to pass your SnowCLI connection name with the `--connection` flag.
-```
-snow sql --connection="[connection-name]" -f sql/00__setup.sql
-snow sql --connection="[connection-name]"  -f sql/01__catalog_table.sql 
-snow sql --connection="[connection-name]" -f sql/02__catalog.sql
-```
-
-Note that before executing `03__app.sql`, update QUERY_WAREHOUSE in the file to an appropriate warehouse name. This script will create a Streamlit UI to manage table descriptions and initiate crawling.
-```
-snow sql --connection="[connection-name]" -f sql/03__app.sql
-```
 
 ## Calling
 All necessary functions and stored procedures are now registered in `DATA_CATALOG.TABLE_CATALOG` in Snowflake.

@@ -7,14 +7,23 @@ from snowflake.snowpark.context import get_active_session
 
 # Get the current credentials
 session = get_active_session()
-models = ["mistral-7b",
-          "llama3-8b",
-          "snowflake-artic",
-          "mixtral-8x7b",
-          "reka-flash",
-          "llama3.1-8b",
-          "jamba-instruct"
-          ]
+models = [
+    'llama3.2-1b',
+    'llama3.2-3b',
+    'llama3.1-8b',
+    'llama3.1-70b',
+    'llama3.1-405b',
+    'snowflake-arctic',
+    'reka-core',
+    'reka-flash',
+    'mistral-large2',
+    'mixtral-8x7b',
+    'mistral-7b',
+    'jamba-instruct',
+    'jamba-1.5-mini',
+    'jamba-1.5-large',
+    'gemma-7b',
+]
 
 def test_complete(session, model, prompt = "Repeat the word hello once and only once. Do not say anything else.") -> bool:
     """Returns True if selected model is supported in region and returns False otherwise."""
