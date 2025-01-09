@@ -366,8 +366,6 @@ def step4_confirm_and_execute():
                     st.warning(f"Error generating descriptions. Error: {str(e)}")
 
 
-
-
 # import time
 # import streamlit as st
 # import pandas as pd
