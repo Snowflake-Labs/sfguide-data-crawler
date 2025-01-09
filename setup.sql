@@ -13,13 +13,13 @@ COMMENT = '{"origin": "sf_sit",
 -- Create API Integration for Git
 CREATE OR REPLACE API INTEGRATION git_api_integration_snowflake_labs
   API_PROVIDER = git_https_api
-  API_ALLOWED_PREFIXES = ('https://github.com/Snowflake-Labs')
+  API_ALLOWED_PREFIXES = ('https://github.com/ta-taiyo')
   ENABLED = TRUE;
 
 -- Create Git Repository
 CREATE OR REPLACE GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_drata_crawler
   API_INTEGRATION = git_api_integration_snowflake_labs
-  ORIGIN = 'https://github.com/Snowflake-Labs/sfguide-data-crawler';
+  ORIGIN = 'https://github.com/ta-taiyo/data-crawler-app';
 
 ALTER GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_drata_crawler FETCH;
 
@@ -73,7 +73,7 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.CATALOG_TABLE(
                                                           prompt string,
                                                           sampling_mode string DEFAULT 'fast', 
                                                           n integer DEFAULT 5,
-                                                          model string DEFAULT 'mistral-7b',
+                                                          model string DEFAULT 'llama3.1-70b',
                                                           update_comment boolean Default FALSE)
 RETURNS VARIANT
 LANGUAGE PYTHON
