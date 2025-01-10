@@ -1,6 +1,6 @@
 SET (streamlit_warehouse)=(SELECT CURRENT_WAREHOUSE());
 
-CREATE DATABASE IF NOT EXISTS DATA_CATALOG
+CREATE DATABASE IF NOT EXISTS DATA_CATALOG_TEST
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
             "version": {"major": 1, "minor": 5}}';
@@ -11,35 +11,35 @@ COMMENT = '{"origin": "sf_sit",
             "version": {"major": 1, "minor": 5}}';
 
 -- Create API Integration for Git
-CREATE OR REPLACE API INTEGRATION git_api_integration_snowflake_labs
+CREATE OR REPLACE API INTEGRATION git_api_integration_itagaki
   API_PROVIDER = git_https_api
   API_ALLOWED_PREFIXES = ('https://github.com/ta-taiyo')
   ENABLED = TRUE;
 
 -- Create Git Repository
-CREATE OR REPLACE GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_drata_crawler
-  API_INTEGRATION = git_api_integration_snowflake_labs
+CREATE OR REPLACE GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki
+  API_INTEGRATION = git_api_integration_itagaki
   ORIGIN = 'https://github.com/ta-taiyo/data-crawler-app';
 
-ALTER GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_drata_crawler FETCH;
+ALTER GIT REPOSITORY DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki FETCH;
 
 CREATE OR REPLACE STAGE DATA_CATALOG.TABLE_CATALOG.SRC_FILES 
 DIRECTORY = (ENABLE = true);
 
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/
-  FROM @DATA_CATALOG.TABLE_CATALOG.git_drata_crawler/branches/main/src/
+  FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/src/
   PATTERN='.*[.]py';
 -- PUT file://src/*.py @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
 
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES
-  FROM @DATA_CATALOG.TABLE_CATALOG.git_drata_crawler/branches/main/streamlit/
+  FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/
   FILES=('manage.py', 'environment.yml');
 
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/pages/
-  FROM @DATA_CATALOG.TABLE_CATALOG.git_drata_crawler/branches/main/streamlit/pages/
+  FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/pages/
   FILES=('run.py');
 
 -- PUT file://streamlit/manage.py @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
