@@ -4,3 +4,4 @@ channels:
 dependencies:
 - streamlit
 - snowflake-ml-python
+- plotly
