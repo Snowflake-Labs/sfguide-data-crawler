@@ -5,3 +5,4 @@ dependencies:
 - streamlit
 - snowflake-ml-python
 - plotly
+- scikit-image
