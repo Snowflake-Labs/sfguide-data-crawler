@@ -122,4 +122,5 @@ if submit_button:
         st.warning("テーブルの更新中にエラーが発生しました。")
 
     # 成功メッセージを 5 秒間表示し、Snowflake 上の最新情報を反映するために再読み込み
-    st.experimental_rerun()
+    # st.experimental_rerun() # v1.38.0から廃止
+    st.rerun()

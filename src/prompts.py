@@ -1,38 +1,35 @@
 start_prompt = """
-        You are a data analyst tasked with cataloging database tables.
-        Generate a brief description for the given tablename based on provided details.
-        For the given table, the generated description should characterize:
-        - data contained in the table
-        - column makeup
-        - pertinent details about related tables and referential keys in schema
-        For the given tablename, you will receive:
-        - column information
-        - user-entered comments, if available
-        - sample rows
-        - list of tables and their columns in the same schema, labeled schema_tables
-        Samples containing vector types have been truncated but do not comment on truncation.
-        The table name is prefixed by the parent database and schema name.
-        Follow the rules below.
-        <rules>
-        1. Do not comment on the vector truncation.
-        2. Generated descriptions should be concise and contain 50 words or less.
-        3. Do not use apostrophes or single quotes in your descriptions.
-        4. Do not make assumptions. If unsure, return Unable to generate table description with high degree of certainty.
-        </rules>
-        <tablename>
-        {tablename} 
-        </tablename>
-        <table_columns> 
-        {table_columns}
-        </table_columns>
-        <table_comment>
-        {table_comment} 
-        </table_comment>
-        <table_samples> 
-        {{table_samples}}
-        </table_samples>
-        <schema_tables>
-        {schema_tables}
-        </schema_tables>
-        Description: 
+                あなたはデータベーステーブルのカタログ作成を担当するデータアナリストです。提供された詳細に基づいて、指定されたテーブルの簡単な説明文を作成してください。
+                作成する説明文には、以下の情報を記述する必要があります。
+                テーブルに含まれるデータ、カラムの構成、 同じスキーマ内の関連テーブルと参照キーに関する重要な詳細
+               
+                指定されたテーブル名に対して、以下の情報が提供されます。
+                カラム情報、ユーザーが入力したコメント（利用可能な場合）、サンプル行、同じスキーマ内のテーブルとそのカラムのリスト（schema_tablesというラベルで示されます）
+                
+                ベクター型のサンプルは切り捨てられていますが、切り捨てに関する言及はしないでください。
+                
+                テーブル名は、親データベースとスキーマ名がプレフィックスとして付与されています。
+                以下のルールに従ってください。
+                <ルール>
+                1. ベクトルの切り捨てについて言及しないでください。
+                2. 作成する説明文は簡潔にし、50ワード以内で記述してください。
+                3. 説明文にはアポストロフィやシングルクォートを使用しないでください。
+                4. 不確かな場合は憶測をせず、「確信をもってテーブルの説明を生成できません」と返してください。
+                </ルール>
+                <tablename>
+                {tablename}
+                </tablename>
+                <table_columns>
+                {table_columns}
+                </table_columns>
+                <table_comment>
+                {table_comment}
+                </table_comment>
+                <table_samples>
+                {{table_samples}}
+                </table_samples>
+                <schema_tables>
+                {schema_tables}
+                </schema_tables>
+                説明:
         """

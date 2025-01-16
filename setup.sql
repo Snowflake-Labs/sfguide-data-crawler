@@ -40,7 +40,7 @@ COPY FILES
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/pages/
   FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/pages/
-  FILES=('run.py', 'catalog.py');
+  FILES=( 'manage.py', 'run.py');
 
 -- PUT file://streamlit/manage.py @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
 -- PUT file://streamlit/environment.yml @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
@@ -114,7 +114,7 @@ EXECUTE AS CALLER;
 
 CREATE OR REPLACE STREAMLIT DATA_CATALOG.TABLE_CATALOG.DATA_CRAWLER
 ROOT_LOCATION = '@data_catalog.table_catalog.src_files'
-MAIN_FILE = '/manage.py'
+MAIN_FILE = '/catalog.py'
 QUERY_WAREHOUSE = 'demo_wh'
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
