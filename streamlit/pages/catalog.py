@@ -1,6 +1,7 @@
 # 必要なライブラリをインポート
 import streamlit as st
 from snowflake.snowpark.functions import sum, col
+from snowflake.snowpark.context import get_active_session
 import plotly.express as px
 from skimage import io
 import re
