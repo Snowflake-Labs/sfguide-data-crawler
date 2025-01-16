@@ -1,6 +1,6 @@
 SET (streamlit_warehouse)=(SELECT CURRENT_WAREHOUSE());
 
-CREATE DATABASE IF NOT EXISTS DATA_CATALOG_TEST
+CREATE OR REPLACE DATABASE DATA_CATALOG_TEST
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
             "version": {"major": 1, "minor": 5}}';
