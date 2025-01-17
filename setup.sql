@@ -29,8 +29,8 @@ COPY FILES
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES
   FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/
-  -- FILES=('catalog_main.py', 'environment.yml');
-  FILES=('manage_main.py', 'environment.yml');
+  -- FILES=('catalog.py', 'environment.yml');
+  FILES=('manage.py', 'environment.yml');
 
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/pages/
