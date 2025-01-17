@@ -35,6 +35,7 @@ COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/pages/
   FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/pages/
   FILES=( 'catalog.py', 'run.py');
+  -- FILES=( 'catalog.py', 'run.py');
 
 -- PUT file://streamlit/manage.py @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
 -- PUT file://streamlit/environment.yml @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
@@ -67,7 +68,7 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.CATALOG_TABLE(
                                                           prompt string,
                                                           sampling_mode string DEFAULT 'fast', 
                                                           n integer DEFAULT 5,
-                                                          model string DEFAULT 'llama3.1-70b',
+                                                          model string DEFAULT 'claude-3-5-sonnet',
                                                           update_comment boolean Default FALSE)
 RETURNS VARIANT
 LANGUAGE PYTHON
@@ -108,7 +109,7 @@ EXECUTE AS CALLER;
 
 CREATE OR REPLACE STREAMLIT DATA_CATALOG.TABLE_CATALOG.DATA_CRAWLER
 ROOT_LOCATION = '@data_catalog.table_catalog.src_files'
-MAIN_FILE = '/catalog.py'
+MAIN_FILE = '/manage.py'
 QUERY_WAREHOUSE = 'demo_wh'
 COMMENT = '{"origin": "sf_sit",
             "name": "data_catalog",
