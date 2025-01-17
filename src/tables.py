@@ -191,86 +191,77 @@ def get_all_tables(session, target_database, target_schemas):
     # F-string interpolation later so remove unexpected curly brackets here in data such as in comments
     return session.sql(query).to_pandas()
 
-# add_records_to_catalogの詳細な説明
-def add_records_to_catalog(session, catalog_database, catalog_schema, catalog_table, new_df, replace_catalog = False):
-    """
-    カタログデータベースにレコードを追加または更新する関数
+def add_records_to_catalog(session,
+                           catalog_database,
+                           catalog_schema,
+                           catalog_table,
+                           new_df,
+                           replace_catalog = False):
     
-    Args:
-        session: Snowflakeセッション
-        catalog_database: カタログ用データベース名
-        catalog_schema: カタログ用スキーマ名
-        catalog_table: カタログ用テーブル名
-        new_df: 新しいレコードを含むデータフレーム
-        replace_catalog: True=既存レコードを更新、False=新規追加のみ
-    """
     if replace_catalog:
-        # 既存のカタログテーブルを取得
         current_df = session.table(f'{catalog_database}.{catalog_schema}.{catalog_table}')
-        
-        # MERGEオペレーションを実行
-        _ = current_df.merge(new_df, 
-            # マージ条件：テーブル名で一致
-            current_df['TABLENAME'] == new_df['TABLENAME'],
-            [
-                # 既存レコードの更新処理
-                F.when_matched().update({
-                    'DESCRIPTION': new_df['DESCRIPTION'],  # 説明を更新
-                    'CREATED_ON': new_df['CREATED_ON'],    # 作成日時を更新
-                    'EMBEDDINGS': F.call_udf(
-                        'SNOWFLAKE.CORTEX.EMBED_TEXT_1024',  # テキスト埋め込みを生成
-                        'voyage-multilingual-2',
-                        new_df['DESCRIPTION']
-                    )
-                }),
-                # 新規レコードの挿入処理
-                F.when_not_matched().insert({
-                    'TABLENAME': new_df['TABLENAME'],      # テーブル名
-                    'DESCRIPTION': new_df['DESCRIPTION'],   # 説明
-                    'CREATED_ON': new_df['CREATED_ON'],    # 作成日時
-                    'EMBEDDINGS': F.call_udf(
-                        'SNOWFLAKE.CORTEX.EMBED_TEXT_1024',  # テキスト埋め込みを生成
-                        'voyage-multilingual-2',
-                        new_df['DESCRIPTION']
-                    )
-                })
-            ]
-        )
+        _ = current_df.merge(new_df, current_df['TABLENAME'] == new_df['TABLENAME'],
+                 [F.when_matched().update({'DESCRIPTION': new_df['DESCRIPTION'],
+                                           'CREATED_ON': new_df['CREATED_ON'],
+                                           'EMBEDDINGS': F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_1024',
+                                                                   'voyage-multilingual-2',
+                                                                    new_df['DESCRIPTION'])}),
+                  F.when_not_matched().insert({'TABLENAME': new_df['TABLENAME'],
+                                               'DESCRIPTION': new_df['DESCRIPTION'],
+                                               'CREATED_ON': new_df['CREATED_ON'],
+                                               'EMBEDDINGS': F.call_udf('SNOWFLAKE.CORTEX.EMBED_TEXT_1024',
+                                                                   'voyage-multilingual-2',
+                                                                    new_df['DESCRIPTION'])})])
     else:
-        # 新規レコードのみを追加（APPEND）
-        new_df.write.save_as_table(
-            table_name = [catalog_database, catalog_schema, catalog_table],
-            mode = "append",
-            column_order = "name"
-        )
+        new_df.write.save_as_table(table_name = [catalog_database, catalog_schema, catalog_table],
+                                mode = "append",
+                                column_order = "name")
 
-def generate_description(session, tablename, prompt, sampling_mode, n, model, update_comment):
+def generate_description(session,
+                         tablename,
+                         prompt,
+                         sampling_mode,
+                         n,
+                         model,
+                         update_comment
+                         ):
+    
+    from snowflake.snowpark.exceptions import SnowparkSQLException
+    
     """
-    テーブルの説明を生成し、必要に応じてテーブルコメントを更新する関数
+    Catalogs table objects in Snowflake.
+
     Args:
-        session: Snowflakeセッション
-        tablename: テーブル名
-        prompt: LLMに渡すプロンプト
-        sampling_mode: サンプリング方法（'fast'または'nonnull'）
-        n: サンプル数
-        model: 使用するLLMモデル
-        update_comment: テーブルコメントを更新するかどうか
+        session (Snowpark session) : ignore parameter
+        tablename (string): Fully qualified Snowflake table name
+        prompt (string): Prompt in format of f-string to pass to LLM
+        sampling_mode (string): How to retrieve sample data records for table.
+                                One of ['fast' (Default), 'nonnull']
+                                - Pass 'fast' or omit to randomly sample records from each table.
+                                - Pass 'nonnull' to prioritize least null records for table samples.
+                                - Passing 'nonnull' will take considerably longer to run.
+        n (int): Number of records to sample from table. Defaults to 5.
+        model (string): Cortex model to generate table descriptions. Defaults to 'mistral-7b'.
+        update_comment (bool): If True, update table's current comments. Defaults to False
+
     Returns:
-        dict: テーブル名と生成された説明を含む辞書
+        Dict
     """
+
+
     response = ''
     try:
-        # LLMを使用して説明を生成
-        ctx_response, response = run_complete(session, tablename, model, sampling_mode, n, prompt)
-        
-        # コメントの更新が要求され、生成が成功した場合
+        ctx_response, response = run_complete(session,
+                                              tablename,
+                                              model, 
+                                              sampling_mode,
+                                              n,
+                                              prompt)
         if update_comment and ctx_response == 'success':
             try:
-                # テーブルのコメントを更新
                 session.sql(f"COMMENT IF EXISTS ON TABLE {tablename} IS '{response}'").collect()
             except SnowparkSQLException as e:
-                try:
-                    # テーブルがビューの場合の処理
+                try: # Table may actually be a view
                     session.sql(f"COMMENT IF EXISTS ON VIEW {tablename} IS '{response}'").collect()
                 except Exception as e:
                     response = f'Error encountered: {str(e)}'
@@ -278,9 +269,7 @@ def generate_description(session, tablename, prompt, sampling_mode, n, model, up
                 response = f'Error encountered: {str(e)}'
     except Exception as e:
         response = f'Error encountered: {str(e)}'
-    
-    # 結果を返す
     return {
         'TABLENAME': tablename,
         'DESCRIPTION': response.replace("\\", "")
-    }
+        }
