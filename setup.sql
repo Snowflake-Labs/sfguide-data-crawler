@@ -107,7 +107,7 @@ COMMENT = '{"origin": "sf_sit",
              "version": {"major": 1, "minor": 5}}'
 EXECUTE AS CALLER;
 
-CREATE OR REPLACE STREAMLIT DATA_CATALOG.TABLE_CATALOG.DATA_CRAWLER
+CREATE OR REPLACE STREAMLIT DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG_APP
 ROOT_LOCATION = '@data_catalog.table_catalog.src_files'
 MAIN_FILE = '/manage.py'
 QUERY_WAREHOUSE = 'demo_wh'
