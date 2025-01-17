@@ -1,14 +1,8 @@
 SET (streamlit_warehouse)=(SELECT CURRENT_WAREHOUSE());
 
-CREATE OR REPLACE DATABASE DATA_CATALOG_TEST
-COMMENT = '{"origin": "sf_sit",
-            "name": "data_catalog",
-            "version": {"major": 1, "minor": 5}}';
+CREATE OR REPLACE DATABASE DATA_CATALOG;
 
-CREATE SCHEMA IF NOT EXISTS DATA_CATALOG.TABLE_CATALOG
-COMMENT = '{"origin": "sf_sit",
-            "name": "data_catalog",
-            "version": {"major": 1, "minor": 5}}';
+CREATE SCHEMA IF NOT EXISTS DATA_CATALOG.TABLE_CATALOG;
 
 -- Create API Integration for Git
 CREATE OR REPLACE API INTEGRATION git_api_integration_itagaki
@@ -35,12 +29,14 @@ COPY FILES
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES
   FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/
-  FILES=('manage.py', 'environment.yml');
+  -- FILES=('catalog_main.py', 'environment.yml');
+  FILES=('manage_main.py', 'environment.yml');
 
 COPY FILES
   INTO @DATA_CATALOG.TABLE_CATALOG.SRC_FILES/pages/
   FROM @DATA_CATALOG.TABLE_CATALOG.git_data_crawler_itagaki/branches/main/streamlit/pages/
-  FILES=( 'manage.py', 'run.py');
+  -- FILES=( 'manage.py', 'run.py');
+  FILES=( 'catalog.py', 'run.py');
 
 -- PUT file://streamlit/manage.py @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;
 -- PUT file://streamlit/environment.yml @DATA_CATALOG.TABLE_CATALOG.SRC_FILES OVERWRITE = TRUE AUTO_COMPRESS = FALSE;

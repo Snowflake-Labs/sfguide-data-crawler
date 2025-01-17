@@ -101,7 +101,7 @@ GEN_SQL = """
 
 
 # データカタログタブの内容
-st.title("データカタログ")
+st.title("テーブルカタログアプリ ❄️")
 
 # アプリケーションのタイトルとサブタイトルを設定
 st.subheader (f"ようこそ  :blue[{str(st.experimental_user.user_name)}] さん")
