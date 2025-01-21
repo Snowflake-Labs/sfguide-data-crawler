@@ -136,7 +136,7 @@ st.divider()
 st.caption("クロールパラメータを選択してください。")
 
 # クロール設定オプション
-replace_catalog = st.checkbox("カタログの説明を置き換え",
+replace_catalog = st.checkbox("カタログの 'DESCRIPTION'列を更新",
                             help = "選択するとテーブルの説明を再生成して置き換えます。")
 update_comment = st.checkbox("テーブルコメントを更新",
                             help = "選択すると生成された説明でテーブルコメントを更新します。")

@@ -119,4 +119,4 @@ def run_table_catalog(session,
         #                        column_order = "name")
         return df
     else:
-        return session.create_dataframe([['クロールするための新しいテーブルがありません。l','']], schema=['TABLENAME', 'DESCRIPTION'])
+        return session.create_dataframe([['クロールするための新しいテーブルがありません。','']], schema=['TABLENAME', 'DESCRIPTION'])

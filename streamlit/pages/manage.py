@@ -52,9 +52,10 @@ text_search = st.text_input(
 
 if text_search and descriptions_dataset.count() > 0:
     descriptions_dataset = filter_embeddings(text_search)
+    
 
 with st.form("data_editor_form"):
-    st.caption("以下の説明を編集してください")
+    st.caption("説明を編集したい場合は手動で編集が可能です")
 
     if descriptions_dataset.count() == 0:
         st.write("テーブルがカタログに登録されていません。**run** ページに移動してカタログを作成してください。")
