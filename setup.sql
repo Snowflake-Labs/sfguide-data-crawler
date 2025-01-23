@@ -22,7 +22,7 @@ CREATE OR REPLACE TEMPORARY TABLE temp_embedding_listings AS
 WITH available_listings AS (
     SELECT * 
     FROM TABLE(RESULT_SCAN(LAST_QUERY_ID()))
-    WHERE "is_share_imported" = true -- 自社で取得したデータのみである場合
+    -- WHERE "is_share_imported" = true -- 自社で取得したデータのみである場合
 )
 SELECT 
     PARSE_JSON("metadata"):title::STRING AS title,
@@ -34,8 +34,10 @@ CREATE OR REPLACE TABLE marketplace_embedding_listings AS
 SELECT 
     title,
     description,
-    SNOWFLAKE.CORTEX.EMBED_TEXT_1024('voyage-multilingual-2', description) AS embedding
+    SNOWFLAKE.CORTEX.EMBED_TEXT_1024('voyage-multilingual-2', description) AS embeddings
 FROM temp_embedding_listings;
+
+-- SELECT * FROM marketplace_embedding_listings LIMIT 10;
 
 -- オプション: 一時テーブルを削除
 DROP TABLE IF EXISTS temp_embedding_listings;
@@ -110,9 +112,7 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_datab
                                                          target_schema string DEFAULT '',
                                                          include_tables ARRAY DEFAULT null,
                                                          exclude_tables ARRAY DEFAULT null,
-                                                         replace_catalog boolean DEFAULT FALSE,
                                                          sampling_mode string DEFAULT 'fast', 
-                                                         update_comment boolean Default FALSE,
                                                          n integer DEFAULT 5,
                                                          model string DEFAULT 'mistral-7b'
                                                          )

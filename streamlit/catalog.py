@@ -5,6 +5,8 @@ import plotly.express as px
 import re
 import ast
 import pandas as pd
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 # ページ設定：幅広レイアウトを使用
 st.set_page_config(layout="wide")
@@ -24,8 +26,8 @@ def get_databases():
         order by 1
     """).toPandas())
 
-# テーブルカタログを取得する関数（キャッシュ付き）
-@st.cache_data()
+# テーブルカタログを取得する関数
+# @st.cache_data()
 def get_table_catalog(databasename):
     df = session.sql ("SELECT distinct COMMENT, table_catalog, table_schema, table_name, table_owner, row_count FROM " + databasename + ".information_schema.tables where table_schema !='INFORMATION_SCHEMA'")
     return df.toPandas()
@@ -99,6 +101,29 @@ GEN_SQL = """
 またなぜその分析例が効果的なのかも詳細に説明し、サンプルのSQLを生成してください。
 """
 
+##########################開発中############################ 
+def get_cosine_similarity():
+    """
+    MARKETPLACE_EMBEDDING_LISTINGSのデータ取得
+    「詳細」ボタンを押したテーブルのデータ取得
+    ２つのテーブルを VECTOR_COSINE_SIMILARITYで類似度検索
+    """
+
+    search_results = session.sql(f"""
+        SELECT 
+            market.TITLE, 
+            market.DESCRIPTION, 
+            VECTOR_COSINE_SIMILARITY(catalog.embeddings, market.embeddings) as similarity
+        FROM 
+            DATA_CATALOG.TABLE_CATALOG.TABLE_CATALOG catalog, 
+            DATA_CATALOG.TABLE_CATALOG.MARKETPLACE_EMBEDDING_LISTINGS market
+        ORDER BY 
+            similarity DESC
+        LIMIT 10
+        """).collect()
+    return search_results
+##########################開発中############################ 
+
 
 # データカタログタブの内容
 st.title("テーブルカタログアプリ ❄️")
@@ -113,7 +138,7 @@ filter_database = st.selectbox('DBを選択してください',df_databases['DAT
 if not '<Select>' in filter_database:
     database_name = filter_database.split(' ')[0].replace('(','').replace(')','')
     
-    with st.spinner('Retrieving the list of objects...'):
+    with st.spinner('テーブルデータを分析中'):
         # テーブルカタログを取得
         table_catalog = get_table_catalog(database_name)
         
@@ -160,3 +185,11 @@ if not '<Select>' in filter_database:
                     response = get_response(session, st.session_state.messages)
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     st.markdown(response)
+
+##########################開発中############################ 
+                # マケプレデータとの類似検索
+                with st.expander("マーケットプレイスで役立ちそうなデータ上位10件"):
+                    results = get_cosine_similarity()
+                    st.dataframe(results)
+                    
+##########################開発中############################ 

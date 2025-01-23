@@ -1,33 +1,30 @@
-# Data Crawler Overview
-Created by Jason Summer, *Solution Innovation Architect - AI/ML*
-
-All sample code is provided for reference purposes only. Please note that this code is provided “AS IS” and without warranty.  Snowflake will not offer any support for use of the sample code.
+# データカタログアプリの概要
+ここに掲載されているサンプルコードは、参照目的でのみ提供されています。このコードは「現状有姿」で提供され、いかなる保証も伴わないことにご注意ください。
+Snowflake は、サンプルコードの使用に関するサポートは提供しません。
 
 Copyright (c) 2024 Snowflake Inc. All Rights Reserved.
 
-Please see TAGGING.md for details on object comments.
-
-## Purpose
-The Data Crawler utility is a Snowflake stored procedure that prompts a Cortex Large Language Model (LLM) to generate a natural language description of each table contained in a Snowflake database and/or schema. The output of the utility are catalog table(s) containing natural language summaries of tables’ contents which can be easily searched, reviewed, revised and searched by team members.
+## 目的
+データカタログアプリは、Snowflake データベースまたはスキーマに含まれる各テーブルの自然言語記述を生成し、生成した結果をデータカタログとして活用します。
+コメント生成機能ではチームメンバーが容易に検索、レビュー、修正、および検索ができます。（コメント生成の機能は[こちらのコード](https://github.com/Snowflake-Labs/sfguide-data-crawler)を参考に修正を行なっています。）
+データカタログではテーブルの検索、LLM によるテーブルの詳細説明と分析アイデアの提示、マーケットプレイスで公開されている類似外部データの提示を行いユーザのデータ活用を促進します。
 
 ## Data
-Prompts passed to the LLM include a given Snowflake table’s database name, schema name, table name, column names, table comment (if available and specified by user), and a sample of table data. Tables in databases or schemas can be crawled. When crawling a user-specified database or schema, all tables and views readable to the current user’s role executing the utility will be included. Table viewing follows standard Snowflake Role Based Access Control.
+LLM に渡されるプロンプトには、Snowflake テーブルのデータベース名、スキーマ名、テーブル名、カラム名、テーブルコメント (利用可能でユーザーが指定した場合)、およびテーブルデータのサンプルが含まれます。データベースまたはスキーマ内のテーブルをクロールできます。ユーザー指定のデータベースまたはスキーマをクロールする場合、ユーティリティを実行している現在のユーザーロールが読み取り可能なすべてのテーブルとビューが含まれます。テーブルの閲覧は、標準的な Snowflake ロールベースアクセス制御に従います。
 
 ## AI Security
-Snowflake hosts and/or manages three types of large language models that power its AI Features: its own proprietary LLMs, open-source LLMs, and licensed proprietary LLMs (collectively, “LLMs”). Snowflake’s AI Features are subject to Snowflake’s standard shared responsibility model for data protection, governance, and security. Snowflake understands that trust is the foundation of its customer relationships and is committed to maintaining high standards of data security and privacy.
+Snowflake は、その AI 機能を強化する 3 種類の大規模言語モデル (LLM) をホストおよび/または管理しています。それは、Snowflake 独自の LLM、オープンソース LLM、およびライセンスされたプロプライエタリ LLM (総称して「LLM」) です。Snowflake の AI 機能は、データ保護、ガバナンス、およびセキュリティに関する Snowflake の標準的な責任共有モデルの対象となります。Snowflake は、お客様との信頼関係が基盤であることを理解しており、高水準のデータセキュリティとプライバシーを維持することに尽力しています。
 
 ## Cortex LLMs
-Snowflake Cortex gives you instant access to industry-leading large language models (LLMs) trained by researchers at companies like Mistral, Meta, and Google. It also offers models that Snowflake has fine-tuned for specific use cases. Since these LLMs are fully hosted and managed by Snowflake, using them requires no setup. Your data stays within Snowflake, giving you the performance, scalability, and governance you expect.
+Snowflake Cortex を使用すると、Mistral、Meta、Google などの企業の研究者によってトレーニングされた、業界をリードする大規模言語モデル (LLM) にすぐにアクセスできます。また、Snowflake が特定のユースケース向けに微調整したモデルも提供しています。これらの LLM は Snowflake によって完全にホストおよび管理されているため、使用するためにセットアップは不要です。お客様のデータは Snowflake 内に保持され、期待されるパフォーマンス、拡張性、およびガバナンスが提供されます。
 
-# Running Data Crawler
-
-## Setup
-The Data Crawler application is deployed to Streamlit in Snowflake by running the SQL file `setup.sql`. The file contents can be copied and pasted into a Snowsight SQL worksheet or run via [VSCode](https://docs.snowflake.com/en/user-guide/vscode-ext) with the Snowflake extension or [SnowCLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index). Once the file is run, the application is available in Snowsight via the Streamlit menu.
-
+# 利用方法
+## 環境のセットアップ
+SQL ファイル `setup.sql` を実行することで、Streamlit in Snowflake にデプロイされます。ファイルの内容は、Snowsight SQL ワークシートにコピー＆ペーストするか、Snowflake 拡張機能を備えた [VSCode](https://docs.snowflake.com/en/user-guide/vscode-ext)または[SnowCLI](https://docs.snowflake.com/en/developer-guide/snowflake-cli-v2/index)を介して実行できます。ファイルが実行されると、アプリケーションは Snowsight の Streamlit メニューから利用可能になります。
 
 ## Calling
-All necessary functions and stored procedures are now registered in `DATA_CATALOG.TABLE_CATALOG` in Snowflake.
-Any desired database and/or schema available to the current user/role can be crawled. 
+必要なすべての関数とストアドプロシージャは、Snowflake の `DATA_CATALOG.TABLE_CATALOG` に登録されています。
+現在のユーザー/ロールが利用できる任意のデータベースまたはスキーマをクロールできます。
 
 Below is an example of calling the utility to crawl all tables and views in database `JSUMMER` schema `CATALOG`. Results will be written to table `DATA_CATALOG.TABLE_CATALOGTABLE_CATALOG`.
 ```sql
@@ -37,38 +34,34 @@ CALL DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_database => 'JSUMMER',
                                   catalog_table => 'TABLE_CATALOG',
                                   target_schema => 'CATALOG',
                                   sampling_mode => 'fast', 
-                                  update_comment => FALSE
                                   );
 ```
 
 > **Note:** Depending on your security practices, you may need to grant usage on the database, schema, and/or stored procedure to others.
 
 The stored procedure provides a number of parameters:
-| parameter        | description |
+| パラメータ        | 説明 |
 | ------------     | ----------- |
-| target_database  | Snowflake database to catalog.    
-| catalog_database | Snowflake database to store table catalog.
-| catalog_schema   | Snowflake schemaname to store table catalog.    
-| catalog_table  | Snowflake tablename to store table catalog.     
-| target_schema | Snowflake schema to catalog. (Optional)    
-| include_tables   | Explicit list of tables to include in catalog. (Optional)     
-| exclude_tables  | Explicit list of tables to exclude in catalog. include_tables takes precedence over exclude_tables. (Optional)
-| replace_catalog | If True, replace existing catalog table records. Defaults to False.   
-| sampling_mode   | How to retrieve sample data records for table. One of ['fast' (Default), 'nonnull']. Passing 'nonnull' will take considerably longer to run.
-| update_comment  | If True, update table's current comments. Defaults to False.    
-| n | Number of records to sample from table. Defaults to 5.    
-| model   | Cortex model to generate table descriptions. Defaults to 'mistral-7b'.    
+| target_database  | カタログ化する Snowflake データベース。  
+| catalog_database | テーブルカタログを格納する Snowflake データベース。
+| catalog_schema   | テーブルカタログを格納する Snowflake スキーマ名。    
+| catalog_table  | テーブルカタログを格納する Snowflake テーブル名    
+| target_schema | カタログ化する Snowflake スキーマ。(オプション)   
+| include_tables   | カタログに含めるテーブルの明示的なリスト。(オプション)     
+| exclude_tables  | カタログから除外するテーブルの明示的なリスト。include_tables が exclude_tables より優先されます。(オプション)
+| sampling_mode   | テーブルのサンプルデータレコードを取得する方法。['fast' (デフォルト)、'nonnull'] のいずれか。'nonnull' を渡すと、実行に時間がかかります。
+| n | テーブルからサンプリングするレコード数。デフォルトは 5 です。    
+| model   | テーブルの説明を生成する Cortex モデル。デフォルトは 'Claude 3.5 Sonnet' です。    
  
-## Streamlit UI
-manage                |  run
-:--------------------:|:-------------------------:
-![](images/manage.png)|![](images/run.png)
+## Streamlit UI のイメージ
+catalog ページの画面     |manage ページの画面     | run ページの画面
+:--------------------:|:--------------------:|:-------------------------:
+![](images/manage.png)|![](images/manage.png)|![](images/run.png)
 
 The final script creates a simple Streamlit user interface, `Data Crawler` with 2 pages:
-- `manage`: Search, review, and revise any table descriptions. 
-- `run`: Specify a new database and/or schema to crawl. 
+- `catalog`: テーブルの検索、LLM によるテーブルの詳細説明と分析アイデアの提示、マーケットプレイスで公開されている類似外部データの提示。
+- `manage`: テーブルの説明を検索、レビュー、および修正します。
+- `run`: 新しいデータベースまたはスキーマ (あるいはその両方) を指定してクロールします。
 
-The search feature on the `manage` page is a semantic search based on vector embeddings. Tables descriptions will be listed according to their semantic similarity to the text searched.
-
-## Feedback
-Feedback welcome. Reach out to jason.summer@snowflake.com.
+## フィードバック
+フィードバックをお待ちしております。 yota.itagaki@snowflake.com までご連絡ください。

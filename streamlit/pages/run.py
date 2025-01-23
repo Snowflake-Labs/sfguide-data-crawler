@@ -20,7 +20,7 @@ models = [
     'mistral-large2',
 ]
 
-def test_complete(session, model, prompt = "Repeat the word hello once and only once. Do not say anything else.") -> bool:
+def test_complete(session, model, prompt = "「OK」という言葉を一度だけ回答してください。") -> bool:
     """
     指定されたモデルが現在のリージョンでサポートされているかテスト
     Args:
@@ -136,10 +136,6 @@ st.divider()
 st.caption("クロールパラメータを選択してください。")
 
 # クロール設定オプション
-replace_catalog = st.checkbox("カタログの 'DESCRIPTION'列を更新",
-                            help = "選択するとテーブルの説明を再生成して置き換えます。")
-update_comment = st.checkbox("テーブルコメントを更新",
-                            help = "選択すると生成された説明でテーブルコメントを更新します。")
 p_col1, p_col2, p_col3 = st.columns(3)
 with p_col1:
     sampling_mode = st.selectbox("サンプリング戦略",
@@ -189,9 +185,7 @@ if submit_button:
                                         target_schema => '{st.session_state["schema"]}',
                                         include_tables => {st.session_state["include_tables"]},
                                         exclude_tables => {st.session_state["exclude_tables"]},
-                                        replace_catalog => {bool(replace_catalog)},
                                         sampling_mode => '{sampling_mode}', 
-                                        update_comment => {bool(update_comment)},
                                         n => {int(n)},
                                         model => '{model}'
                                         )
