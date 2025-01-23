@@ -112,7 +112,9 @@ CREATE OR REPLACE PROCEDURE DATA_CATALOG.TABLE_CATALOG.DATA_CATALOG(target_datab
                                                          target_schema string DEFAULT '',
                                                          include_tables ARRAY DEFAULT null,
                                                          exclude_tables ARRAY DEFAULT null,
+                                                         replace_catalog boolean DEFAULT TRUE,
                                                          sampling_mode string DEFAULT 'fast', 
+                                                         update_comment boolean Default TRUE,
                                                          n integer DEFAULT 5,
                                                          model string DEFAULT 'mistral-7b'
                                                          )
